@@ -1,4 +1,4 @@
-import { Directive, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Directive, EventEmitter, HostListener, Input, Output, ChangeDetectorRef } from '@angular/core';
 
 import { PoNotificationService } from '../../../../services/po-notification/po-notification.service';
 import { PoUploadLiterals } from '../interfaces/po-upload-literals.interface';
@@ -22,7 +22,7 @@ export class PoUploadDragDropDirective {
 
   @Output('p-file-change') fileChange: EventEmitter<any> = new EventEmitter<any>();
 
-  constructor(private notification: PoNotificationService) {}
+  constructor(private notification: PoNotificationService, private changeDetector: ChangeDetectorRef) {}
 
   @HostListener('document:dragleave', ['$event']) onDragLeave(event) {
     event.preventDefault();
@@ -47,28 +47,40 @@ export class PoUploadDragDropDirective {
     event.stopPropagation();
 
     if (!this.disabled) {
-      const files = this.getOnlyFiles(event.dataTransfer.files);
-
-      this.sendFiles(event, files);
+      const items = event.dataTransfer.items;
+      for (let i = 0; i < items.length; i++) {
+        const item = event.dataTransfer.items[i].webkitGetAsEntry();
+        this.traverseFileTree(item, event);
+      }
 
       this.dragLeave.emit();
     }
+
   }
 
-  // return only file, folder is ignored
-  private getOnlyFiles(fileList: FileList): Array<File> {
-    return Array.from(fileList).reduce((newFiles, file) =>
-      file.type ? newFiles.concat(file) : newFiles,
-    []);
+  traverseFileTree(item, event) {
+    if (item.isFile) {
+
+      item.file(file => { this.sendFiles(event, [file]); });
+
+    } else if (item.isDirectory) {
+      const dirReader = item.createReader();
+      dirReader.readEntries(entries => {
+        for (let i = 0; i < entries.length; i++) {
+          this.traverseFileTree(entries[i], event);
+        }
+      });
+    }
   }
 
   private sendFiles(event, files) {
     if (this.areaElement.contains(event.target)) {
       if (files.length > 0) {
         this.fileChange.emit(files);
+        // this.changeDetector.detectChanges();
+      } else {
+        this.notification.information(this.literals.invalidDropArea);
       }
-    } else {
-      this.notification.information(this.literals.invalidDropArea);
     }
   }
 

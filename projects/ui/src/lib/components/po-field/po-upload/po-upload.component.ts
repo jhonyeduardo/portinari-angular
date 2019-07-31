@@ -1,4 +1,4 @@
-import { Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, forwardRef, ViewChild, Renderer2, ChangeDetectorRef } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { isMobile } from '../../../utils/util';
@@ -61,7 +61,11 @@ export class PoUploadComponent extends PoUploadBaseComponent {
 
   @ViewChild('inputFile', {read: ElementRef, static: true }) private inputFile: ElementRef;
 
-  constructor(private elementRef: ElementRef, uploadService: PoUploadService) {
+  constructor(
+    private elementRef: ElementRef,
+    uploadService: PoUploadService,
+    public renderer: Renderer2,
+    private changeDetector: ChangeDetectorRef) {
     super(uploadService);
   }
 
@@ -72,6 +76,10 @@ export class PoUploadComponent extends PoUploadBaseComponent {
   get displaySendButton(): boolean {
     const currentFiles = this.currentFiles || [];
     return !this.hideSendButton && !this.autoUpload && (currentFiles.length > 0 && this.hasFileNotUploaded);
+  }
+
+  get hasMultipleFiles(): boolean {
+    return this.currentFiles && this.currentFiles.length > 1;
   }
 
   get hasFileNotUploaded(): boolean {
@@ -144,7 +152,7 @@ export class PoUploadComponent extends PoUploadBaseComponent {
   // Função disparada ao selecionar algum arquivo.
   onFileChange(event): void {
 
-    // necessario este tratamento quando para IE, pois nele o change é disparado quando o campo é limpado também
+    // necessário este tratamento quando para IE, pois nele o change é disparado quando o campo é limpado também
     if (this.calledByCleanInputValue) {
       this.calledByCleanInputValue = false;
       return event.preventDefault();
@@ -160,12 +168,18 @@ export class PoUploadComponent extends PoUploadBaseComponent {
     this.updateFiles(files);
   }
 
-  // Remove o arquivo passado por parametro da lista dos arquivos correntes.
+  // Remove o arquivo passado por parâmetro da lista dos arquivos correntes.
   removeFile(file): void {
     const index = this.currentFiles.indexOf(file);
     this.currentFiles.splice(index, 1);
 
     this.updateModel([...this.currentFiles]);
+  }
+
+  // Remove o arquivo passado por parâmetro da lista dos arquivos correntes.
+  removeAllFiles(): void {
+    this.currentFiles = undefined;
+    this.updateModel(undefined);
   }
 
   /** Método responsável por **abrir** a janela para seleção de arquivo(s). */
@@ -179,6 +193,18 @@ export class PoUploadComponent extends PoUploadBaseComponent {
     if (this.currentFiles && this.currentFiles.length) {
 
       this.uploadFiles(this.currentFiles);
+    }
+  }
+
+  setDirectoryAttribute(visible: boolean) {
+    if (visible && this.browserCompatible()) {
+      this.renderer.setAttribute(this.inputFile.nativeElement, 'webkitdirectory', 'true');
+      this.renderer.setAttribute(this.inputFile.nativeElement, 'multiple', 'true');
+    } else {
+      this.renderer.removeAttribute(this.inputFile.nativeElement, 'webkitdirectory');
+      if (!this.isMultiple) {
+        this.renderer.removeAttribute(this.inputFile.nativeElement, 'multiple' );
+      }
     }
   }
 
@@ -221,6 +247,12 @@ export class PoUploadComponent extends PoUploadBaseComponent {
     const divStatus = this.elementRef.nativeElement.querySelector(`div[id='${uid}'].po-upload-progress`);
     const fileNameDiv = divStatus.querySelector('.po-upload-filename');
     fileNameDiv.classList.add('po-upload-filename-loading');
+  }
+
+  private browserCompatible() {
+    const userAgent = window.navigator.userAgent;
+
+    return /Edge|Chrome|Firefox|Safari|Opera\//i.test(userAgent);
   }
 
   private cleanInputValue() {
@@ -280,6 +312,7 @@ export class PoUploadComponent extends PoUploadBaseComponent {
   }
 
   private updateFiles(files) {
+    console.log('update files:: ', files);
     this.currentFiles = this.parseFiles(files);
 
     this.updateModel([...this.currentFiles]);
@@ -291,7 +324,10 @@ export class PoUploadComponent extends PoUploadBaseComponent {
 
   // Atualiza o ngModel para os arquivos passados por parâmetro.
   private updateModel(files: Array<PoUploadFile>) {
+    console.log('update model:: ', [ ...files ], this.onModelChange);
     this.onModelChange ? this.onModelChange(files) : this.ngModelChange.emit(files);
+
+    this.changeDetector.detectChanges();
   }
 
   // Função disparada enquanto o arquivo está sendo enviado ao serviço.

@@ -22,6 +22,9 @@ export interface PoUploadLiterals {
   /** Texto exibido caso o usuário arrastar um arquivo para um local inválido ao utilizar a opção de *dragDrop*. */
   invalidDropArea?: string;
 
+  /** Texto exibido quando tiver mais de um arquivo a ser enviado par ao server. */
+  removeAll?: string;
+
   /** Texto exibido no label do botão de seleção dos arquivos. */
   selectFile?: string;
 

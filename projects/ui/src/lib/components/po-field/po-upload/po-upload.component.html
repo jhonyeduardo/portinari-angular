@@ -74,6 +74,13 @@
       (p-click)="uploadFiles(currentFiles)">
     </po-button>
 
+    <po-button class="po-ml-1"
+      *ngIf="hasMultipleFiles"
+      p-type="primary"
+      [p-label]="literals.removeAll"
+      (p-click)="removeAllFiles()">
+    </po-button>
+
   </div>
 
 </po-field-container>

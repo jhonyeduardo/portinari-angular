@@ -20,7 +20,8 @@ export const poUploadLiteralsDefault = {
     dragFilesHere: 'Drag files here',
     selectFilesOnComputer: 'or select files on your computer',
     dropFilesHere: 'Drop files here',
-    invalidDropArea: 'Files were not dropped in the correct area'
+    invalidDropArea: 'Files were not dropped in the correct area',
+    removeAll: 'Remove all files'
   },
   es: <PoUploadLiterals> {
     selectFile: 'Seleccionar archivo',
@@ -31,7 +32,8 @@ export const poUploadLiteralsDefault = {
     dragFilesHere: 'Arrastra los archivos aquí',
     selectFilesOnComputer: 'o selecciona los archivos en tu computadora',
     dropFilesHere: 'Deja los archivos aquí',
-    invalidDropArea: 'Los archivos no se insertaron en la ubicación correcta'
+    invalidDropArea: 'Los archivos no se insertaron en la ubicación correcta',
+    removeAll: 'Eliminar todo'
   },
   pt: <PoUploadLiterals> {
     selectFile: 'Selecionar arquivo',
@@ -42,7 +44,8 @@ export const poUploadLiteralsDefault = {
     dragFilesHere: 'Arraste os arquivos aqui',
     selectFilesOnComputer: 'ou selecione os arquivos no computador',
     dropFilesHere: 'Solte os arquivos aqui',
-    invalidDropArea: 'Os arquivos não foram inseridos no local correto'
+    invalidDropArea: 'Os arquivos não foram inseridos no local correto',
+    removeAll: 'Remover todos'
   }
 };
 
@@ -61,8 +64,9 @@ const poUploadFormFieldDefault = 'files';
  *  - Função de erro que será disparada quando houver erro no envio dos arquivos.
  *  - Permite habilitar uma área onde os arquivos podem ser arrastados.
  */
-export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
+export abstract class PoUploadBaseComponent implements ControlValueAccessor, Validator {
 
+  private _directory?: boolean;
   private _disabled?: boolean;
   private _dragDrop?: boolean = false;
   private _fileRestrictions?: PoUploadFileRestrictions;
@@ -75,10 +79,30 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
   allowedExtensions: string;
   currentFiles: Array<PoUploadFile>;
 
+  cacheIsMultiple: boolean;
   onModelChange: any;
   onModelTouched: any;
 
   private validatorChange: any;
+
+  /**
+   * @optional
+   *
+   * @description
+   *
+   * Permite que sejam selecionados diretórios para envio.
+   *
+   * @default `false`
+   */
+  @Input('p-directory') set directory(value: boolean) {
+    this._directory = convertToBoolean(value);
+
+    this.directory ? this.setDirectoryAttribute(true) : this.setDirectoryAttribute(false);
+  }
+
+  get directory() {
+    return this._directory;
+  }
 
   /**
    * @optional
@@ -456,7 +480,7 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
       return this.updateExistsFileInFiles(newFile, files);
     }
 
-    if (this.isMultiple) {
+    if (this.isMultiple || this.directory) {
 
       files.push(newFile);
     } else {
@@ -486,5 +510,7 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
 
     return files;
   }
+
+  abstract setDirectoryAttribute(value: boolean);
 
 }
