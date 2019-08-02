@@ -9,6 +9,7 @@ import { PoUploadFileRestrictions } from './interfaces/po-upload-file-restrictio
 import { PoUploadLiterals } from './interfaces/po-upload-literals.interface';
 import { PoUploadService } from './po-upload.service';
 import { PoUploadStatus } from './po-upload-status.enum';
+import { PoNotificationService } from '../../../services';
 
 export const poUploadLiteralsDefault = {
   en: <PoUploadLiterals> {
@@ -74,6 +75,9 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
 
   allowedExtensions: string;
   currentFiles: Array<PoUploadFile>;
+  xxx;
+  tamanhoerrado = 0;
+  formatoerrado = 0;
 
   onModelChange: any;
   onModelTouched: any;
@@ -350,7 +354,7 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
   // Função para atualizar o ngModel do componente, necessário quando não for utilizado dentro da *tag* `form`.
   @Output('ngModelChange') ngModelChange?: EventEmitter<any> = new EventEmitter<any>();
 
-  constructor(protected uploadService: PoUploadService) { }
+  constructor(protected uploadService: PoUploadService, private notification: PoNotificationService) { }
 
   registerOnChange(fn: any): void {
     this.onModelChange = fn;
@@ -399,6 +403,7 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
   protected parseFiles(files: Array<File>): Array<PoUploadFile> {
     let poUploadFiles: Array<PoUploadFile> = this.currentFiles || [];
     const filesLength = files.length;
+    let y = 1;
 
     for (let i = 0; i < filesLength; i++) {
 
@@ -410,10 +415,14 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
 
       if (this.checkRestrictions(file)) {
         poUploadFiles = this.insertFileInFiles(file, poUploadFiles);
+      } else {
+        this.xxx = y++;
       }
-
+      console.log('entrou aqui 1', this.xxx);
     }
-
+    if (this.xxx) {
+      this.notification.information(`${this.xxx}entrou onde eu queria`);
+    }
     return poUploadFiles;
   }
 
@@ -434,6 +443,10 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
 
       const isAccept = allowedExtensions ? this.isAllowedExtension(file.extension, allowedExtensions) : true;
       const isAcceptSize = file.size >= minFileSize && file.size <= maxFileSize;
+
+      if (!isAcceptSize) {
+        this.tamanhoerrado = this.tamanhoerrado + 1;
+      }
 
       return isAccept && isAcceptSize;
     }
@@ -468,7 +481,12 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
   }
 
   private isAllowedExtension(extension: string, allowedExtensions: Array<string> = []): boolean {
-    return allowedExtensions.some(ext => ext.toLowerCase() === extension);
+    const isAllowed = allowedExtensions.some(ext => ext.toLowerCase() === extension);
+    if (!isAllowed) {
+      this.formatoerrado = this.formatoerrado + 1;
+      console.log('formato errado ', this.formatoerrado);
+    }
+    return isAllowed;
   }
 
   private setAllowedExtensions(restrictions: PoUploadFileRestrictions = {}) {

@@ -31,6 +31,20 @@
       (p-click)="selectFiles()">
     </po-button>
 
+
+
+
+    <po-upload-file-restrictions *ngIf="fileRestrictions"
+      class="po-upload-file-restrictions"
+      [ngClass]="{'po-upload-file-restrictions-drag-drop' : displayDragDrop}"
+      [p-file-restrictions]="fileRestrictions">
+    </po-upload-file-restrictions>
+
+
+
+
+
+
     <div class="po-upload-progress" *ngFor="let file of currentFiles" [id]="file.uid">
       <div class="po-upload-progress-status"></div>
       <div class="po-upload-filename-foreground">

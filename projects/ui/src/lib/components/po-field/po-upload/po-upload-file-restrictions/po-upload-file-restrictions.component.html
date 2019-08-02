@@ -1,0 +1,9 @@
+<p class="po-font-text-small">
+  {{maxFiles}} arquivo(s) permitido(s).
+</p>
+<p class="po-font-text-small" *ngIf="allowedExtensions">
+  Formatos aceitos: {{allowedExtensions}}
+</p>
+<p class="po-font-text-small" *ngIf="minFileSize || maxFileSize">
+  Tamanho por arquivo:{{minFileSize}}{{maxFileSize}}
+</p>

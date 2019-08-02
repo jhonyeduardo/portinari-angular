@@ -2,6 +2,7 @@ import { Directive, EventEmitter, HostListener, Input, Output } from '@angular/c
 
 import { PoNotificationService } from '../../../../services/po-notification/po-notification.service';
 import { PoUploadLiterals } from '../interfaces/po-upload-literals.interface';
+import { PoUploadFileRestrictions } from '../interfaces/po-upload-file-restriction.interface';
 
 @Directive({
   selector: '[p-upload-drag-drop]'
@@ -15,6 +16,8 @@ export class PoUploadDragDropDirective {
   @Input('p-disabled') disabled: boolean;
 
   @Input('p-literals') literals: PoUploadLiterals;
+
+  // @Input('p-file-restrictions') fileRestrictions: PoUploadFileRestrictions;
 
   @Output('p-drag-leave') dragLeave: EventEmitter<any> = new EventEmitter<any>();
 

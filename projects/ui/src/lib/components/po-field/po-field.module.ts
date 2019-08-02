@@ -45,6 +45,7 @@ import {
   PoUploadDragDropAreaOverlayComponent
 } from './po-upload/po-upload-drag-drop/po-upload-drag-drop-area-overlay/po-upload-drag-drop-area-overlay.component';
 import { PoUploadDragDropAreaComponent } from './po-upload/po-upload-drag-drop/po-upload-drag-drop-area/po-upload-drag-drop-area.component';
+import { PoUploadFileRestrictionsComponent } from './po-upload/po-upload-file-restrictions/po-upload-file-restrictions.component';
 import { PoUrlComponent } from './po-url/po-url.component';
 
 /**
@@ -123,6 +124,7 @@ import { PoUrlComponent } from './po-url/po-url.component';
     PoUploadDragDropDirective,
     PoUploadDragDropAreaOverlayComponent,
     PoUploadDragDropAreaComponent,
+    PoUploadFileRestrictionsComponent,
     PoUrlComponent
   ],
   providers: [],

@@ -7,6 +7,7 @@ import { PoUploadBaseComponent } from './po-upload-base.component';
 import { PoUploadFile } from './po-upload-file';
 import { PoUploadService } from './po-upload.service';
 import { PoUploadStatus } from './po-upload-status.enum';
+import { PoNotificationService } from '../../../services';
 
 /**
  * @docsExtends PoUploadBaseComponent
@@ -61,8 +62,8 @@ export class PoUploadComponent extends PoUploadBaseComponent {
 
   @ViewChild('inputFile', {read: ElementRef, static: true }) private inputFile: ElementRef;
 
-  constructor(private elementRef: ElementRef, uploadService: PoUploadService) {
-    super(uploadService);
+  constructor(private elementRef: ElementRef, uploadService: PoUploadService, notification: PoNotificationService) {
+    super(uploadService, notification);
   }
 
   get displayDragDrop(): boolean {
