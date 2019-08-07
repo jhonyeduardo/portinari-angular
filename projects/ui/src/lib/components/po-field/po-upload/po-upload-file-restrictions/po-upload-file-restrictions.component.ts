@@ -1,6 +1,8 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, ChangeDetectorRef } from '@angular/core';
-import { PoUploadFileRestrictions } from '@portinari/portinari-ui/lib';
-import { browserLanguage, poLocaleDefault } from 'projects/ui/src/lib/utils/util';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+
+import { browserLanguage, poLocaleDefault } from '../../../../utils/util';
+
+import { PoUploadFileRestrictions } from '../interfaces/po-upload-file-restriction.interface';
 import { poUploadLiteralsDefault } from '../po-upload-base.component';
 
 @Component({
