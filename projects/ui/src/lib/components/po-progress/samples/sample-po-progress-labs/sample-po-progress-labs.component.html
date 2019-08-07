@@ -1,14 +1,14 @@
 <po-progress
   [p-indeterminate]="properties.includes('indeterminate')"
-  [p-info-icon]="infoIcon"
   [p-info]="info"
+  [p-info-icon]="infoIcon"
   [p-status]="status"
   [p-text]="text"
   [p-value]="value"
   (p-cancel)="cancel()">
 </po-progress>
 
-<hr>
+<po-divider></po-divider>
 
 <po-info
   p-label="Event"
@@ -68,7 +68,6 @@
       p-label="Status"
       [p-options]="statusOptions">
     </po-radio-group>
-
   </div>
 
   <div class="po-row">
