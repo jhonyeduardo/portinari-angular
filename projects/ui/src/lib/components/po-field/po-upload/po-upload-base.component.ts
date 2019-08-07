@@ -21,7 +21,15 @@ export const poUploadLiteralsDefault = {
     dragFilesHere: 'Drag files here',
     selectFilesOnComputer: 'or select files on your computer',
     dropFilesHere: 'Drop files here',
-    invalidDropArea: 'Files were not dropped in the correct area'
+    invalidDropArea: 'Files were not dropped in the correct area',
+    invalidAmount: 'Falha ao enviar {0} arquivo(s), pois excede(m) a quantidade limite de {0} arquivos.',
+    invalidFormat: 'Falha ao enviar {0} arquivo(s), pois não corresponde(m) ao(s) formato(s): {0}.',
+    invalidSize: 'Falha ao enviar {0} arquivo(s), pois não atende ao tamanho permitido: {0}.',
+    numberOfFilesAllowed: '{0} arquivos(s) permitido(s)',
+    allowedFormats: 'Formatos aceitos: {0}.',
+    allowedSizes: 'Tamanho por arquivo: ',
+    minFileSize: 'a partir de {0}',
+    maxFileSize: 'até {0}'
   },
   es: <PoUploadLiterals> {
     selectFile: 'Seleccionar archivo',
@@ -32,7 +40,15 @@ export const poUploadLiteralsDefault = {
     dragFilesHere: 'Arrastra los archivos aquí',
     selectFilesOnComputer: 'o selecciona los archivos en tu computadora',
     dropFilesHere: 'Deja los archivos aquí',
-    invalidDropArea: 'Los archivos no se insertaron en la ubicación correcta'
+    invalidDropArea: 'Los archivos no se insertaron en la ubicación correcta',
+    invalidAmount: 'Falha ao enviar {0} arquivo(s), pois excede(m) a quantidade limite de {0} arquivos.',
+    invalidFormat: 'Falha ao enviar {0} arquivo(s), pois não corresponde(m) ao(s) formato(s): {0}.',
+    invalidSize: 'Falha ao enviar {0} arquivo(s), pois não atende ao tamanho permitido: {0}.',
+    numberOfFilesAllowed: '{0} arquivos(s) permitido(s)',
+    allowedFormats: 'Formatos aceitos: {0}.',
+    allowedSizes: 'Tamanho por arquivo: ',
+    minFileSize: 'a partir de {0}',
+    maxFileSize: 'até {0}'
   },
   pt: <PoUploadLiterals> {
     selectFile: 'Selecionar arquivo',
@@ -43,7 +59,15 @@ export const poUploadLiteralsDefault = {
     dragFilesHere: 'Arraste os arquivos aqui',
     selectFilesOnComputer: 'ou selecione os arquivos no computador',
     dropFilesHere: 'Solte os arquivos aqui',
-    invalidDropArea: 'Os arquivos não foram inseridos no local correto'
+    invalidDropArea: 'Os arquivos não foram inseridos no local correto',
+    invalidAmount: 'Falha ao enviar {0} arquivo(s), pois excede(m) a quantidade limite de {0} arquivos.',
+    invalidFormat: 'Falha ao enviar {0} arquivo(s), pois não corresponde(m) ao(s) formato(s): {0}.',
+    invalidSize: 'Falha ao enviar {0} arquivo(s), pois não atende ao tamanho permitido: {0}.',
+    numberOfFilesAllowed: '{0} arquivos(s) permitido(s)',
+    allowedFormats: 'Formatos aceitos: {0}.',
+    allowedSizes: 'Tamanho por arquivo: ',
+    minFileSize: 'a partir de {0}',
+    maxFileSize: 'até {0}'
   }
 };
 
@@ -75,13 +99,13 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
 
   allowedExtensions: string;
   currentFiles: Array<PoUploadFile>;
-  xxx;
-  tamanhoerrado = 0;
-  formatoerrado = 0;
 
   onModelChange: any;
   onModelTouched: any;
 
+  private extensionNotAllowed = 0;
+  private quantityNotAllowed = 0;
+  private sizeNotAllowed = 0;
   private validatorChange: any;
 
   /**
@@ -392,7 +416,8 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
     }
   }
 
-  protected isExceededFileLimit(currentFilesLength: number): boolean {
+  protected isExceededFileLimit(currentFilesLength: number ): boolean {
+    // console.log('passou dentro da validação', currentFilesLength);
     return this.isMultiple &&
       this.fileRestrictions &&
       this.fileRestrictions.maxFiles > 0 &&
@@ -403,27 +428,34 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
   protected parseFiles(files: Array<File>): Array<PoUploadFile> {
     let poUploadFiles: Array<PoUploadFile> = this.currentFiles || [];
     const filesLength = files.length;
-    let y = 1;
 
     for (let i = 0; i < filesLength; i++) {
 
       if (this.isExceededFileLimit(poUploadFiles.length)) {
+        this.quantityNotAllowed = filesLength - this.fileRestrictions.maxFiles;
         break;
       }
-
       const file = new PoUploadFile(files[i]);
 
       if (this.checkRestrictions(file)) {
         poUploadFiles = this.insertFileInFiles(file, poUploadFiles);
-      } else {
-        this.xxx = y++;
       }
-      console.log('entrou aqui 1', this.xxx);
+
     }
-    if (this.xxx) {
-      this.notification.information(`${this.xxx}entrou onde eu queria`);
-    }
+    this.sendFeddback();
     return poUploadFiles;
+  }
+
+  sendFeddback() {
+    if (this.sizeNotAllowed > 0) {
+      this.notification.information(`${this.sizeNotAllowed} tamanho errado`);
+    }
+    if (this.extensionNotAllowed > 0) {
+      this.notification.information(`${this.extensionNotAllowed} formato errado`);
+    }
+    if (this.quantityNotAllowed > 0) {
+      this.notification.information(`${this.quantityNotAllowed} ultrapassou quantidade`);
+    }
   }
 
   protected validateModel(model: any) {
@@ -445,7 +477,7 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
       const isAcceptSize = file.size >= minFileSize && file.size <= maxFileSize;
 
       if (!isAcceptSize) {
-        this.tamanhoerrado = this.tamanhoerrado + 1;
+        this.sizeNotAllowed = this.sizeNotAllowed + 1;
       }
 
       return isAccept && isAcceptSize;
@@ -483,8 +515,7 @@ export class PoUploadBaseComponent implements ControlValueAccessor, Validator {
   private isAllowedExtension(extension: string, allowedExtensions: Array<string> = []): boolean {
     const isAllowed = allowedExtensions.some(ext => ext.toLowerCase() === extension);
     if (!isAllowed) {
-      this.formatoerrado = this.formatoerrado + 1;
-      console.log('formato errado ', this.formatoerrado);
+      this.extensionNotAllowed = this.extensionNotAllowed + 1;
     }
     return isAllowed;
   }

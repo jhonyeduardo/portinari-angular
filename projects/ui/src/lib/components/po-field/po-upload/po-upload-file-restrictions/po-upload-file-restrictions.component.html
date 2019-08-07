@@ -1,9 +1,9 @@
 <p class="po-font-text-small">
-  {{maxFiles}} arquivo(s) permitido(s).
+  {{ literals?.numberOfFilesAllowed | poI18n:literalParams }}
 </p>
 <p class="po-font-text-small" *ngIf="allowedExtensions">
-  Formatos aceitos: {{allowedExtensions}}
+  {{ literals?.allowedFormats | poI18n:literalParamns }}
 </p>
 <p class="po-font-text-small" *ngIf="minFileSize || maxFileSize">
-  Tamanho por arquivo:{{minFileSize}}{{maxFileSize}}
+  {{ literals?.allowedSizes }}{{ literals?.minFileSize | poI18n:literalParams }}{{ literals?.maxFileSize | poI18n:literalParams }}
 </p>

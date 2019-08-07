@@ -1,5 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Input, ChangeDetectorRef } from '@angular/core';
 import { PoUploadFileRestrictions } from '@portinari/portinari-ui/lib';
+import { browserLanguage, poLocaleDefault } from 'projects/ui/src/lib/utils/util';
+import { poUploadLiteralsDefault } from '../po-upload-base.component';
 
 @Component({
   selector: 'po-upload-file-restrictions',
@@ -10,23 +12,26 @@ export class PoUploadFileRestrictionsComponent implements OnInit {
 
   @Input('p-file-restrictions') fileRestrictions: PoUploadFileRestrictions;
 
+  literals;
+  literalParams;
   minFileSize: any;
   maxFiles: any;
   maxFileSize: any;
   allowedExtensions: any;
 
-  constructor() { }
+  constructor(private changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.setFileRestrictions(this.fileRestrictions);
+    this.getLiterals();
   }
 
   setFileRestrictions(fileRestrictions) {
     if (this.fileRestrictions.minFileSize) {
-      this.minFileSize = ` a partir de ${this.formatBytes(this.fileRestrictions.minFileSize)}`;
+      this.minFileSize = this.formatBytes(this.fileRestrictions.minFileSize);
     }
     if (this.fileRestrictions.maxFileSize) {
-      this.maxFileSize = ` até ${this.formatBytes(this.fileRestrictions.maxFileSize)}`;
+      this.maxFileSize = this.formatBytes(this.fileRestrictions.maxFileSize);
     }
     this.maxFiles = this.fileRestrictions.maxFiles ? this.fileRestrictions.maxFiles : 1;
     this.allowedExtensions = this.fileRestrictions.allowedExtensions
@@ -45,6 +50,19 @@ export class PoUploadFileRestrictionsComponent implements OnInit {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  }
+
+  private getLiterals(language?: string) {
+    language = language || browserLanguage();
+
+    this.literalParams = [this.maxFiles, this.allowedExtensions, this.minFileSize, this.maxFileSize];
+
+    this.literals = {
+      ...poUploadLiteralsDefault[poLocaleDefault],
+      ...poUploadLiteralsDefault[language],
+    };
+
+    this.changeDetector.detectChanges();
   }
 
 }
